@@ -1,0 +1,33 @@
+                .scroll-btn {
+                    width: 100px;
+                    height: 100px;
+                    top: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-color: red;
+            position: relative;
+            animation: float 2s infinite ease-in-out;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .scroll-btn::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border-left: 4px solid black;
+            border-bottom: 4px solid black;
+            transform: rotate(-45deg);
+            position: absolute;
+            border-color: white;
+        }
+
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(8px);
+            }
+        }
