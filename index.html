@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InVisu 360 - Visites Virtuelles</title>
+
+    <link href="style/style.css" rel="stylesheet">
+    <link href="style/invisu.css" rel="stylesheet">
+
+</head>
+<body>
+
+    <!-- Barre de navigation cachée -->
+    <div class="navbar" id="navbar">
+        <button class="nav-btn" onclick="smoothScrollTo('culture', 1000)">Patrimoine & Culture</button>
+        <button class="nav-btn" onclick="smoothScrollTo('immo', 1000)">Immobilier & Locations</button>
+        <button class="nav-btn" onclick="smoothScrollTo('pro', 1000)">Espaces Pros & Éducation</button>
+    </div>
+
+    <div id="viewer">
+        <div id="fadeOverlay"></div>
+        <div id="filter"></div>
+        <!-- Écran d'accueil -->
+        <div class="intro">
+            <h1 id="animated-title">InVisu 360 - Visites Virtuelles</h1>
+            <h2>Découvrez autrement, Explorez sans limites.</h2>
+            <div class="game-selection">
+                <button class="btn-gaming" data-game="pro" onclick="smoothScrollTo('pro', 1000)">Espaces Pros & Éducation</button>
+                <button class="btn-gaming" data-game="culture" onclick="smoothScrollTo('culture', 1000)">Patrimoine & Culture</button>
+                <button class="btn-gaming" data-game="immo" onclick="smoothScrollTo('immo', 1000)">Immobilier & Locations</button>
+                <div class="game-description hidden" id="game-description"></div>
+            </div>
+            <nav class="contact">
+                <button class="btn-gaming" data-game="contact" onclick="smoothScrollTo('contact', 1000)">Demander un devis</button>    
+            </nav>
+            
+
+            <style type="text/css">
+                .contact {
+                    position: absolute;
+                    top: 10px;
+                    right: 25px;
+                }
+                .contact .btn-gaming {
+                    margin-left: 5px;
+                    font-size: 15px;
+                    padding: 15px;
+                    padding-bottom: 10px;
+                    padding-top: 10px;
+                }
+                @media (max-width: 768px) {
+                    .game-selection {
+                        display: none;
+                    }
+                    .contact {
+                        display: none;
+                    }
+                }
+            </style>
+
+            <div class="scroll-btn" onclick="smoothScrollTo('introduction', 1000)"></div>
+        </div>
+
+        <style>
+            #viewer { width: 100vw; height: 100vh; position: relative; }
+            #overlay {
+                position: absolute;
+            }
+            /* Overlay noir pour le fondu */
+            #fadeOverlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: black;
+                opacity: 0;
+                transition: opacity 0.5s ease-in-out;
+                pointer-events: none;
+            }
+            #filter {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: black;
+                opacity: 0.6;
+            }
+        </style>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const buttons = document.querySelectorAll(".btn-gaming");
+                const descriptionBox = document.getElementById("game-description");
+
+                const gameDescriptions = {
+                    "culture": "Valorisez musées et sites historiques grâce à l’immersion virtuelle.",
+                    "immo": " Facilitez la découverte de biens immobiliers avec des visites interactives.",
+                    "pro": "Optimisez la présentation de vos salles et établissements avec des visites immersives."
+                };
+
+                buttons.forEach(button => {
+                    button.addEventListener("mouseenter", (event) => {
+                        const gameKey = event.target.getAttribute("data-game");
+                        descriptionBox.textContent = gameDescriptions[gameKey];
+                        descriptionBox.style.left = `${event.target.offsetLeft + event.target.offsetWidth / 2 - 125}px`;
+                        descriptionBox.classList.add("visible");
+                    });
+
+                    button.addEventListener("mouseleave", () => {
+                        descriptionBox.classList.remove("visible");
+                    });
+                });
+            });
+        </script>
+    </div>
+
+    <!-- Vue panoramique -->
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js';
+
+        let scene, camera, renderer, sphere, textureLoader;
+        let speed = 0.001; // Vitesse de rotation
+        let images = ["https://gael-mgn.github.io/360/test/6.jpg",  "https://gael-mgn.github.io/360/img/website/2.jpg",
+        "https://gael-mgn.github.io/360/img/website/1.jpg"]; // Liste des images 360°
+        let textures = {}; // Stockage des textures préchargées
+        let currentImageIndex = 0;
+        let autoChangeInterval;
+        const fadeOverlay = document.getElementById("fadeOverlay");
+
+        function init() {
+            const container = document.getElementById("viewer");
+
+            // Get the dimensions using getBoundingClientRect
+            const rect = container.getBoundingClientRect();
+
+            // Création de la scène
+            scene = new THREE.Scene();
+
+            // Création de la caméra
+            camera = new THREE.PerspectiveCamera(75, rect.width / rect.height, 0.1, 1000);
+            camera.position.set(0, 0, 0.1);
+
+            // Récupérer la taille du conteneur et ajuster le rendu en conséquence
+            function resizeRendererToDisplaySize(renderer) {
+                const container = document.getElementById("viewer");
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+
+            // Rendu WebGL
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(rect.width, rect.height);
+            container.appendChild(renderer.domElement);
+
+            // Chargement des textures au démarrage
+            textureLoader = new THREE.TextureLoader();
+            preloadTextures(images, () => {
+                // Création de la sphère une fois les textures chargées
+                const geometry = new THREE.SphereGeometry(500, 60, 40);
+                const material = new THREE.MeshBasicMaterial({
+                    map: textures[images[currentImageIndex]], 
+                    side: THREE.BackSide
+                });
+                sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
+
+                startAutoChange(); // Lancement du changement auto
+                animate();
+            });
+
+            // Redimensionnement dynamique
+            window.addEventListener('resize', () => resizeRendererToDisplaySize(renderer));
+            // Changer l'image avec la touche espace
+            /*window.addEventListener("keydown", (event) => {
+                if (event.code === "Space") {
+                    resetAutoChange(); // Réinitialise le compteur
+                    changeImage();
+                }
+            });*/
+        }
+
+        // 🔹 Précharge toutes les textures avant d'afficher la scène
+        function preloadTextures(imageList, callback) {
+            let loadedCount = 0;
+            imageList.forEach(image => {
+                textureLoader.load(image, (texture) => {
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    textures[image] = texture; // Stocke la texture préchargée
+                    loadedCount++;
+                    if (loadedCount === imageList.length) callback(); // Une fois toutes chargées, callback
+                });
+            });
+        }
+
+        // 🔹 Change l'image avec une transition en fondu noir
+        function changeImage() {
+            currentImageIndex = (currentImageIndex + 1) % images.length; // Boucle sur les images
+            const newTexture = textures[images[currentImageIndex]];
+
+            fadeOverlay.style.opacity = 1; // Début du fondu noir
+
+            setTimeout(() => {
+                sphere.material.map = newTexture;
+                sphere.material.needsUpdate = true;
+                fadeOverlay.style.opacity = 0; // Fin du fondu noir
+            }, 500);
+        }
+
+        // 🔹 Démarre le changement d’image automatique
+        function startAutoChange() {
+            autoChangeInterval = setInterval(changeImage, 8000); // Change toutes les 3s
+        }
+
+        // 🔹 Réinitialise le changement auto (utile si l’utilisateur change manuellement)
+        function resetAutoChange() {
+            clearInterval(autoChangeInterval); // Stoppe le timer
+            startAutoChange(); // Redémarre le cycle
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            sphere.rotation.y += speed; // Rotation automatique
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+
+
+    <div class="container" id="introduction">
+        <div class="content">
+            <h2>InVisu 360 - Visite Virtuelles</h2>
+
+            <p>Chez <strong>InVisu 360</strong>, nous transformons les espaces réels en expériences virtuelles immersives. Grâce à une technologie innovante et un rendu ultra-réaliste, nous permettons aux musées, établissements scolaires et professionnels de proposer des visites interactives, accessibles en quelques clics.</p>
+            <br>
+            <p>Plongez dans une immersion inédite grâce à nos visites virtuelles interactives. Que ce soit pour valoriser un musée, organiser des portes ouvertes ou louer un espace, InVisu 360 vous offre une expérience unique et accessible à tous.</p>
+
+            <div class="scroll-btn" onclick="smoothScrollTo('services', 1000)"></div>
+        </div>
+    </div>
+
+    <div class="container" id="services">
+        <div class="content">
+            <h2>Nos services</h2>
+            <ul>
+                <li><strong>Visites virtuelles pour musées et lieux culturels</strong> – Offrez une découverte immersive du patrimoine, accessible de partout.</li>
+                <li><strong>Portes ouvertes en ligne pour écoles et universités</strong> – Faites découvrir votre établissement sans contrainte géographique.</li>
+                <li><strong>Mise en valeur d’espaces professionnels</strong> – Présentez vos salles de conférence et séminaires avec une visite interactive.</li>
+            </ul>
+
+
+            <button class="btn-gaming" data-game="culture" onclick="startGame('culture')">Demander un devis</button>
+
+            <style>
+                .content .btn-gaming {
+                    margin-top: 40px;
+                }
+            </style>
+
+        <div class="scroll-btn" onclick="smoothScrollTo('pro', 1000)"></div>
+        </div>
+    </div>
+
+
+<div id="pro">
+<br><br>
+<div class="news-card hidden">
+    <div class="news-header">
+        <!--<img src="image.jpeg" alt="Image du jeu">-->
+        <h2>Espaces Pros & Éducation</h2>
+    </div>
+
+    <div class="news-content">
+        <h3>Optimisez la présentation de vos salles et établissements avec des visites immersives.</h3>
+        <p>Les entreprises et institutions éducatives doivent se démarquer pour attirer clients, collaborateurs et étudiants. <strong>InVisu 360</strong> propose des solutions de virtualisation permettant de mettre en avant vos espaces et d’offrir une visite réaliste avant même qu’une personne ne s’y rende physiquement.</p>
+
+        <h3>Possibilités offertes</h3>
+        <ul>
+            <li><strong>Portes ouvertes virtuelles</strong> – Permettez aux futurs étudiants et partenaires de découvrir votre établissement à distance.</li>
+            <li><strong>Présentation de salles de séminaire et de conférence</strong> – Mettez en valeur vos espaces pour la location d’événements professionnels.</li>
+            <li><strong>Expérience immersive pour les collaborateurs</strong> –  Offrez une première immersion dans l’environnement de travail.</li>
+            <li><strong>Valorisation de campus et centres de formation</strong> – Attirez de nouveaux étudiants et visiteurs grâce à une présentation dynamique.</li>
+        </ul>
+
+        <h3>Pourquoi choisir InVisu 360 ?</h3>
+        <ul>
+            <li>Améliorez la visibilité et l’attractivité de vos espaces.</li>
+            <li>Facilitez la prise de décision pour la location ou l’inscription.</li>
+            <li>Offrez une solution accessible 24/7 à vos clients.</li>
+            <li>Modernisez votre communication avec une approche innovante.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="culture">
+<br><br>
+<div class="news-card hidden">
+    <div class="news-header">
+        <!--<img src="image.jpeg" alt="Image du jeu">-->
+        <h2>Patrimoine & Culture</h2>
+    </div>
+
+    <div class="news-content">
+        <h3>Valorisez musées et sites historiques grâce à l’immersion virtuelle.</h3>
+        <p>
+            Le patrimoine mérite d’être découvert par tous, sans limite géographique ni contrainte d’accessibilité. Avec <strong>InVisu 360</strong>, nous donnons vie aux musées, monuments et expositions grâce à des visites virtuelles interactives et immersives.
+        </p>
+
+        <h3>Possibilités offertes</h3>
+        <ul>
+            <li><strong>Visites en ligne interactives</strong> – Permettez au public d’explorer vos espaces depuis chez eux.</li>
+            <li><strong>Médiation numérique enrichie</strong> – Intégrez du contenu multimédia (audio, texte, vidéo) pour une expérience immersive.</li>
+            <li><strong>Accessibilité accrue</strong> – Rendez la culture disponible aux personnes à mobilité réduite ou éloignées.</li>
+            <li><strong>Outil éducatif</strong> – Proposez des parcours pédagogiques interactifs pour les écoles et universités.</li>
+        </ul>
+
+        <h3>Pourquoi choisir InVisu 360 ?</h3>
+        <ul>
+            <li>Augmentez la visibilité et l’attractivité de votre site culturel.</li>
+            <li>Offrez une expérience immersive qui engage et captive les visiteurs.</li>
+            <li>Facilitez l’accès à votre patrimoine, partout et à tout moment.</li>
+            <li>Attirez un nouveau public grâce au numérique.</li>
+        </ul>
+
+        <!--<h3>Démonstration</h3>
+        <div class="news-video">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                title="Vidéo de présentation" allowfullscreen></iframe>
+        </div>-->
+    </div>
+</div>
+</div>
+</div>
+
+<div id="immo">
+<br><br>
+<div class="news-card hidden">
+    <div class="news-header">
+        <!--<img src="image.jpeg" alt="Image du jeu">-->
+        <h2>Immobilier & Locations</h2>
+    </div>
+
+    <div class="news-content">
+        <h3>Facilitez la découverte de biens immobiliers avec des visites interactives.</h3>
+        <p>Dans un marché immobilier où la rapidité et la transparence sont essentielles, les visites virtuelles sont un atout incontournable. InVisu 360 vous permet de présenter vos biens de manière immersive, réduisant ainsi les visites inutiles et accélérant la prise de décision des acheteurs et locataires.</p>
+
+        <h3>Possibilités offertes</h3>
+        <ul>
+            <li><strong>Visites immersives haute qualité</strong> – Offrez une vue détaillée des biens sans déplacement.</li>
+            <li><strong>Expérience engageante pour les acheteurs</strong> – Permettez aux clients de se projeter dans leur futur logement.</li>
+            <li><strong>Gain de temps pour les agences</strong> – Réduisez les visites physiques aux clients réellement intéressés.</li>
+            <li><strong>Outil pour la gestion locative</strong> – Facilitez la location d’appartements, bureaux et commerces avec une présentation optimisée.</li>
+        </ul>
+
+        <h3>Pourquoi choisir InVisu 360 ?</h3>
+        <ul>
+            <li>Augmentez la conversion des visites en ventes ou en locations.</li>
+            <li>Valorisez les biens avec une présentation immersive et professionnelle.</li>
+            <li>Offrez une solution accessible 24/7 aux clients potentiels.</li>
+        </ul>
+
+        <h3>Démonstration</h3>
+        <div class="news-video">
+            <iframe src="https://gael-mgn.github.io/360/visite.html" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<style>
+    /* Effet global d'apparition */
+    @keyframes fadeInSlide {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+
+
+
+    .news-card {
+        background: #222;
+        color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        width: 90%;
+        max-width: 800px;
+        margin: 20px auto;
+        margin-bottom: 30px;
+        box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+     /* État visible avec animation */
+    .news-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .news-header {
+        text-align: center;
+    }
+
+    .news-header img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        transition: transform 0.5s ease-in-out;
+    }
+
+
+
+    .news-header h2 {
+        margin-top: 10px;
+        font-size: 24px;
+        opacity: 0;
+        animation: fadeInSlide 1.2s ease-out forwards;
+    }
+
+    .news-content p {
+        font-size: 16px;
+        line-height: 1.5;
+        margin: 10px 0;
+        opacity: 0;
+        animation: fadeInSlide 1.4s ease-out forwards;
+    }
+
+    .news-content h3 {
+        margin-top: 15px;
+        font-size: 20px;
+        opacity: 0;
+        animation: fadeInSlide 1.6s ease-out forwards;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    ul li {
+        margin: 5px 0;
+        font-size: 16px;
+        opacity: 0;
+        animation: fadeInSlide 1.8s ease-out forwards;
+    }
+
+    .news-video {
+        text-align: center;
+        margin-top: 15px;
+        opacity: 0;
+        animation: fadeInSlide 2s ease-out forwards;
+    }
+
+    .news-video iframe {
+        width: 100%;
+        border-radius: 8px;
+    }
+
+</style>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                    observer.unobserve(entry.target); // Désactive l'observation après l'animation
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll(".news-card").forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+
+
+
+
+
+    <script>
+        function smoothScrollTo(element, duration) {
+            const targetPosition = document.getElementById(element).offsetTop;
+            const startPosition = window.scrollY;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
+
+            function animationStep(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1);
+
+                const easeInOut = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                window.scrollTo(0, startPosition + distance * easeInOut);
+
+                if (elapsedTime < duration) {
+                    requestAnimationFrame(animationStep);
+                }
+            }
+
+            requestAnimationFrame(animationStep);
+        }
+
+        // Affichage de la barre de navigation après un certain scroll
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth >= 768){
+                const navbar = document.getElementById('navbar');
+            if (window.scrollY >= window.innerHeight*1.6) {
+                navbar.classList.add('show');
+            } else {
+                navbar.classList.remove('show');
+            }
+            }
+        });
+
+    </script>
+
+    <footer>
+        <div class="footer-container">
+            <!-- Section Informations -->
+            <div class="footer-nav">
+                <h3>InVisu 360</h3>
+                <ul>
+                <li>Découvrez autrement, Explorez sans limites.</li>
+                <li><strong>Email :</strong> contact@invisu.fr</li>
+                <li><strong>Téléphone :</strong> +33 6 74 41 36 37</li>
+            </div>
+            
+            <!-- Section Navigation -->
+            <div class="footer-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="#">Accueil</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Nos services</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Section Navigation -->
+            <div class="footer-nav">
+                <h3>Nos domaines d'expertise</h3>
+                <ul>
+                    <li><a href="#">Espaces Pros & Education</a></li>
+                    <li><a href="#">Patrimoine & Culture</a></li>
+                    <li><a href="#">Immobilier & Locations</a></li>
+                </ul>
+            </div>
+            
+
+        </div>
+        
+        <!-- Section Mentions légales et Copyright -->
+        <div class="footer-bottom">
+            <p><a href="#">Mentions légales</a> | <a href="#">Politique de confidentialité</a></p>
+            <p>&copy; 2025 InVisu 360. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
