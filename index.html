@@ -46,9 +46,9 @@
             <h1 id="animated-title">InVisu 360 - Visites Virtuelles</h1>
             <h2>Découvrez autrement, Explorez sans limites.</h2>
             <div class="game-selection">
-                <button class="btn-gaming" data-game="pro" onclick="smoothScrollTo('pro', 1000)">Espaces Pros & Éducation</button>
-                <button class="btn-gaming" data-game="culture" onclick="smoothScrollTo('culture', 1000)">Patrimoine & Culture</button>
-                <button class="btn-gaming" data-game="immo" onclick="smoothScrollTo('immo', 1000)">Immobilier & Locations</button>
+                <button class="btn-gaming btn" data-game="pro" onclick="smoothScrollTo('pro', 1000)">Espaces Pros & Éducation</button>
+                <button class="btn-gaming btn" data-game="culture" onclick="smoothScrollTo('culture', 1000)">Patrimoine & Culture</button>
+                <button class="btn-gaming btn" data-game="immo" onclick="smoothScrollTo('immo', 1000)">Immobilier & Locations</button>
                 <div class="game-description hidden" id="game-description"></div>
             </div>
             <nav class="contact">
@@ -113,7 +113,7 @@
 
         <script>
             document.addEventListener("DOMContentLoaded", () => {
-                const buttons = document.querySelectorAll(".btn-gaming");
+                const buttons = document.querySelectorAll(".btn");
                 const descriptionBox = document.getElementById("game-description");
 
                 const gameDescriptions = {
@@ -142,8 +142,8 @@
 
         let scene, camera, renderer, sphere, textureLoader;
         let speed = 0.001; // Vitesse de rotation
-        let images = ["https://gael-mgn.github.io/360/visites/eivp/1.jpg",  "https://gael-mgn.github.io/360/visites/logement/2.png",
-        "https://gael-mgn.github.io/360/visites/aeroscopia/2.jpg"]; // Liste des images 360°
+        let images = ["https://gael-mgn.github.io/invisu/img/1.webp",  "https://gael-mgn.github.io/invisu/img/2.webp",
+        "https://gael-mgn.github.io/invisu/img/3.webp"]; // Liste des images 360°
         let textures = {}; // Stockage des textures préchargées
         let currentImageIndex = 0;
         let autoChangeInterval;
@@ -352,11 +352,6 @@
                     <li>Facilitez l’accès à votre patrimoine, partout et à tout moment.</li>
                     <li>Attirez un nouveau public grâce au numérique.</li>
                 </ul>
-
-                <h3>Démonstration - A380 Aéroscopia</h3>
-                <div class="news-video">
-                    <iframe src="https://gael-mgn.github.io/360/visites/aeroscopia/aeroscopia.html" allowfullscreen></iframe>
-                </div>
             </div>
         </div>
     </div>

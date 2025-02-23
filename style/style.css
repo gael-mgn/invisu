@@ -15,6 +15,12 @@ body {
     overflow-x: hidden;
 }
 
+.btn-container {
+                        margin-top: 30px;
+                        display: flex;
+                        justify-content: center; /* Centre horizontalement */
+                    }
+
     /* Effet global d'apparition */
     @keyframes fadeInSlide {
         from {
