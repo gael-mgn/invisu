@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invisu 360 - Simulez votre devis de visite virtuelle 360° en quelques clics !</title>
+
+    <script src="../../js/main.js"></script>
+
+    <link href="../../style/style.css" rel="stylesheet">
+
+</head>
+<body>
+        <nav class="navbar3" id="navbar3">
+        <a href="../../index.html" class="logo">InVisu 360</a>
+        <div class="hamburger" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <ul class="menu">
+            <li><button class="nav-btn" onclick="window.location.href='../realisations/realisations.html';">Nos réalisations</button></li>
+            <li><button class="nav-btn" onclick="window.location.href='../devis/devis.html';">Demander un devis</button></li>
+        </ul>
+    </nav>
+
+    <style type="text/css">
+        .navbar3 {
+            transform: translateY(0);
+        }
+    </style>
+
+<br>    
+    <div id="policy">
+        <br><br>
+        <div class="news-card hidden">
+            <div class="news-header">
+                <h1>Simulez votre devis de visite virtuelle 360° en quelques clics !</h1>
+            </div>
+
+
+            <div class="news-content" id="contact">
+                <p>Obtenez une estimation personnalisée en fonction de votre espace et de vos besoins spécifiques.</p>
+
+
+
+
+
+
+
+
+
+                <style>
+.container2 {
+
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+        .options label {
+            margin-right: 15px;
+        }
+        input, select {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+    </style>
+
+    <br>
+    <div class="container2">
+        <h2>Simulation de Devis</h2>
+        <div id="slides">
+            <div class="slide active">
+                <p>Quelle est la surface totale concernée par la visite virtuelle (en m²) ?</p>
+                <input type="number" id="surface" min="1" value="1">
+            </div>
+            <div class="slide">
+                <p>Combien de pièces seront concernées par la visite ?</p>
+                <input type="number" id="numRooms" min="1" value="1">
+            </div>
+            <div class="slide">
+                <p>Quelle est votre distance depuis Paris (en km) ?</p>
+                <input type="number" id="distance" min="0" value="0">
+            </div>
+            <!--
+            <div class="slide">
+                <p>Souhaitez-vous un service supplémentaire ?</p>
+                <div class="options">
+                    <label><input type="radio" name="extra" value="oui"> Oui</label>
+                    <label><input type="radio" name="extra" value="non" checked> Non</label>
+                </div>
+            </div>-->
+            <div class="slide">
+                <h3>Estimation du devis :</h3>
+                <p id="result"></p>
+            </div>
+        </div>
+        <div class="buttons">
+            <button class="button" id="prev" disabled>Précédent</button>
+            <button class="button" id="next">Suivant</button>
+        </div>
+    </div>
+    <br>
+
+    <script>
+        const slides = document.querySelectorAll(".slide");
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle("active", i === index);
+            });
+            document.getElementById("prev").disabled = index === 0;
+            document.getElementById("next").disabled = index === slides.length - 1;
+            document.getElementById("next").innerText = index === slides.length - 2 ? "Voir le devis" : "Suivant";
+        }
+
+        document.getElementById("next").addEventListener("click", () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                if (currentSlide === slides.length - 1) {
+                    calculateQuote();
+                }
+                showSlide(currentSlide);
+            }
+        });
+
+        document.getElementById("prev").addEventListener("click", () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+
+        function calculateQuote() {
+
+            let surface = parseInt(document.getElementById("surface").value) || 0;
+            let numRooms = parseInt(document.getElementById("numRooms").value) || 0;
+            let distance = parseInt(document.getElementById("distance").value) || 0;
+
+            let basePrice = 0;
+            if (surface <= 150) {
+                basePrice = 150;
+            } else if (surface <= 300) {
+                basePrice = 150 + (surface - 150) * 0.7;
+            } else if (surface <= 500) {
+                basePrice = 150 + 150 * 0.7 + (surface - 300) * 0.45;
+            } else {
+                basePrice = 150 + 150 * 0.7 + 200 * 0.45 + (surface - 500) * 0.2;
+            }
+            
+            let roomSupplement = numRooms > 5 ? (numRooms - 5) * 20 : 0;
+            
+            let travelFee = 0;
+            if (distance > 50 && distance <= 100) {
+                travelFee = 50;
+            } else if (distance > 100 && distance <= 200) {
+                travelFee = 100;
+            } else if (distance > 200) {
+                travelFee = 150;
+            }
+            
+            let totalPrice = basePrice + roomSupplement + travelFee;
+            
+            if (surface > 1000) {
+                totalPrice *= 0.9;
+            }
+
+            let total = totalPrice;
+            document.getElementById("result").innerText = `Total estimé : ${total} € (HT)`;
+            
+
+/*
+            let hours = parseInt(document.getElementById("hours").value) || 0;
+            let intervenants = parseInt(document.getElementById("intervenants").value) || 0;
+            let extraCharge = document.querySelector('input[name="extra"]:checked').value === "oui" ? 100 : 0;
+
+            let baseRate = 50; // Tarif horaire par intervenant
+
+            let total = (hours * intervenants * baseRate) + extraCharge;
+            document.getElementById("result").innerText = `Total estimé : ${total} € (HT)`;*/
+        }
+    </script>
+
+
+
+
+                <h2>Contactez-nous !</h2>
+                <p>Il ne vous reste plus qu’un pas pour concrétiser votre projet ! Contactez-nous dès maintenant pour affiner votre devis et bénéficier de conseils personnalisés. Que ce soit pour une question, une demande spécifique ou simplement pour échanger sur votre projet, notre équipe est à votre écoute. Transformez votre espace en une expérience immersive unique avec Invisu 360 !</p>
+
+                <br>
+
+                <ul>
+                    <li>Par mail : contact@invisu.fr</li>
+                    <li>Par téléphone : +33 6 74 41 36 37</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <div class="footer-container">
+            <!-- Section Informations -->
+            <div class="footer-nav">
+                <h3>InVisu 360</h3>
+                <ul>
+                <li>Découvrez autrement, Explorez sans limites.</li>
+                <li><strong>Email :</strong> contact@invisu.fr</li>
+                <li><strong>Téléphone :</strong> +33 6 74 41 36 37</li>
+            </div>
+            
+            <!-- Section Navigation -->
+            <div class="footer-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="../../index.html">Accueil</a></li>
+                    <li><a href="../../index.html#services">Nos services</a></li>
+                    <li><a href="../devis/devis.html#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Section Navigation -->
+            <div class="footer-nav">
+                <h3>Nos domaines d'expertise</h3>
+                <ul>
+                    <li><a href="#">Espaces Pros & Education</a></li>
+                    <li><a href="#">Patrimoine & Culture</a></li>
+                    <li><a href="#">Immobilier & Locations</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Section Mentions légales et Copyright -->
+        <div class="footer-bottom">
+            <p><a href="../terms-of-use/terms-of-use.html">Mentions légales</a> | <a href="../private-policy/private-policy.html">Politique de confidentialité</a></p>
+            <p>&copy; 2025 InVisu 360. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
