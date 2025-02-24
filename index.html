@@ -55,9 +55,17 @@
                 <button class="btn-gaming" onclick="window.location.href='articles/realisations/realisations.html';">Nos réalisations</button>
                 <button class="btn-gaming" onclick="window.location.href='articles/devis/devis.html';">Demander un devis</button>
             </nav>
+
+            <p id="infos"></p>
             
 
             <style type="text/css">
+                #infos {
+                    position: absolute;
+                    bottom: 10px;
+                    left: 10px;
+                    color: grey;
+                }
                 .contact {
                     position: absolute;
                     top: 15px;
@@ -144,6 +152,7 @@
         let speed = 0.001; // Vitesse de rotation
         let images = ["https://gael-mgn.github.io/invisu/img/1.webp",  "https://gael-mgn.github.io/invisu/img/2.webp",
         "https://gael-mgn.github.io/invisu/img/3.webp"]; // Liste des images 360°
+        let descriptions = ["Ecole des Ingénieurs de la Ville de Paris (EIVP) - Paris", "Visite virtuelle d'un studio", "Airbus A380 - Aeroscopia, Blagnac"];
         let textures = {}; // Stockage des textures préchargées
         let currentImageIndex = 0;
         let autoChangeInterval;
@@ -202,6 +211,8 @@
                     changeImage();
                 }
             });*/
+
+            document.getElementById("infos").textContent = descriptions[currentImageIndex];
         }
 
         // 🔹 Précharge toutes les textures avant d'afficher la scène
@@ -220,6 +231,8 @@
         // 🔹 Change l'image avec une transition en fondu noir
         function changeImage() {
             currentImageIndex = (currentImageIndex + 1) % images.length; // Boucle sur les images
+            
+            document.getElementById("infos").textContent = descriptions[currentImageIndex];
             const newTexture = textures[images[currentImageIndex]];
 
             fadeOverlay.style.opacity = 1; // Début du fondu noir
