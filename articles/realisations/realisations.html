@@ -41,39 +41,73 @@
 
             <div class="news-content">
 
-                <style type="text/css">
-                    .news-content img {
-                        width: 100%;
-                        height: auto;
-                        margin: 10px;
-                        border-radius: 12px;
-                    }
-                </style>
-
-                <h3>A380 - Aéroscopia</h3>
-
-                <img src="https://gael-mgn.github.io/360/visites/aeroscopia/A380.jpg">
-
+                <div class="grid-container">
+        <a href="https://gael-mgn.github.io/360/visites/aeroscopia/aeroscopia.html" target="_blank" class="article">
+            <img src="https://gael-mgn.github.io/360/visites/aeroscopia/A380.jpg" alt="Image de l'article">
+            <div class="article-content">
+                <h2>A380 - Aeroscopia</h2>
                 <p>Au cours de cette visite virtuelle, il s'est agit de réaliser une capatation de deux espaces cabines d'un modèle d'expostion (A380) du musée Aeroscopia situé à proximité de Toulouse.</p>
-                <div class="btn-container">
-                    <button class="nav-btn" onclick="window.open('https://gael-mgn.github.io/360/visites/aeroscopia/aeroscopia.html');">Découvrir</button>
-                </div>
-
-                <br>
-
-                <h3>Démonstrtion - Bien immobilier</h3>
-
-                <img src="https://gael-mgn.github.io/360/visites/logement/preview1.webp">
-
+            </div>
+        </a>
+        <a href="https://gael-mgn.github.io/360/visites/logement/logement.html" target="_blank" class="article">
+            <img src="https://gael-mgn.github.io/360/visites/logement/preview1.webp" alt="Image de l'article">
+            <div class="article-content">
+                <h2>Démonstration - Bien immobilier</h2>
                 <p>Il s'agit ici d'une démonstration visant à présenter les différentes fonctionnalités offertes par notre moteur de vistes virtuelles.</p>
-                <div class="btn-container">
-                    <button class="nav-btn" onclick="window.open('https://gael-mgn.github.io/360/visites/logement/logement.html');">Visiter</button>
-                </div>
+            </div>
+        </a>
+        <a href="#" target="_blank" class="article">
+            <img src="RCP.jpg" alt="Image de l'article">
+            <div class="article-content">
+                <h2>Radio Campus Paris - Studio d'enregistrement (en cours d'acquisition)</h2>
+                <p>Plongez au coeur du studio d'enregistrement de Radio Campus Paris !</p>
+            </div>
+        </a>
+    </div>
 
-                <!--
-                <div class="news-video">
-                    <iframe src="https://gael-mgn.github.io/360/visites/aeroscopia/aeroscopia.html" allowfullscreen></iframe>
-                </div>-->
+                <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .article {
+            background: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+        .article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(255, 255, 255, 0.2);
+        }
+        .article img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            filter: brightness(0.8);
+        }
+        .article-content {
+            padding: 15px;
+        }
+        .article h2 {
+            font-size: 1.2em;
+            margin: 0 0 10px;
+            color: #ffffff;
+        }
+        .article p {
+            font-size: 0.9em;
+            color: #b0b0b0;
+            margin: 0;
+        }
+    </style>
+
+
 
             </div>
         </div>
